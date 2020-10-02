@@ -5,14 +5,15 @@ import { buildSchema } from 'type-graphql';
 import dotEnv from 'dotenv';
 import { createConnection } from 'typeorm';
 
-import { RegisterResolver } from './modules/user/register';
+import { UserResolver } from './resolvers/user';
+import { CategoryResolver } from './resolvers/category';
 
 const Server = async () => {
   const connection = await createConnection();
   await connection.synchronize();
 
   const schema = await buildSchema({
-    resolvers: [RegisterResolver],
+    resolvers: [UserResolver, CategoryResolver],
   });
 
   dotEnv.config();

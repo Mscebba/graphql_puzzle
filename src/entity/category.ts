@@ -4,15 +4,13 @@ import {
   PrimaryGeneratedColumn,
   Column,
   BaseEntity,
-  // OneToMany,
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-// import { Recipe } from './recipe';
 
 @ObjectType()
 @Entity()
-export class User extends BaseEntity {
+export class Category extends BaseEntity {
   @Field(() => ID)
   @PrimaryGeneratedColumn('uuid')
   id: number;
@@ -20,17 +18,6 @@ export class User extends BaseEntity {
   @Field()
   @Column()
   name: string;
-
-  @Field()
-  @Column('text', { unique: true })
-  email: string;
-
-  @Column()
-  password: string;
-
-  // @Field(() => [Recipe])
-  // @OneToMany(() => Recipe, (recipe) => recipe.user)
-  // recipes: Recipe[];
 
   @Field()
   @CreateDateColumn({ type: 'timestamp' })
