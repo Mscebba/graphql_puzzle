@@ -6,9 +6,11 @@ import {
   Field,
   ArgsType,
   Args,
+  UseMiddleware,
 } from 'type-graphql';
 
 import { Recipe } from '../entity/recipe';
+import { isAuth } from '../middleware/isauth';
 
 @ArgsType()
 class NewRecipeInput {
@@ -41,12 +43,14 @@ class UpdateRecipeInput {
 export class RecipeResolver {
   // Get the list of recipes
   @Query(() => [Recipe], { nullable: true })
+  @UseMiddleware(isAuth)
   async getRecipes(): Promise<Recipe[] | null> {
     return await Recipe.find();
   }
 
   // Get one recipe by ID
   @Query(() => Recipe, { nullable: true })
+  @UseMiddleware(isAuth)
   async getOneRecipe(
     @Arg('id', () => String) id: string
   ): Promise<Recipe | null> {
@@ -57,6 +61,7 @@ export class RecipeResolver {
 
   // Create a new recipe
   @Mutation(() => Recipe)
+  @UseMiddleware(isAuth)
   async createRecipe(
     @Args() { name, description, ingredients }: NewRecipeInput
   ): Promise<Recipe> {
@@ -71,6 +76,7 @@ export class RecipeResolver {
 
   // Update existing recipe
   @Mutation(() => Recipe)
+  @UseMiddleware(isAuth)
   async updateRecipe(
     @Args() { id, name, description, ingredients }: UpdateRecipeInput
   ): Promise<Recipe> {
@@ -83,6 +89,7 @@ export class RecipeResolver {
 
   // Delete recipe
   @Mutation(() => Boolean, { nullable: true })
+  @UseMiddleware(isAuth)
   async deleteRecipe(
     @Arg('id', () => String) id: string
   ): Promise<Boolean | null> {
