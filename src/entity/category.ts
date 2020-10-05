@@ -13,7 +13,7 @@ import {
 export class Category extends BaseEntity {
   @Field(() => ID)
   @PrimaryGeneratedColumn('uuid')
-  id: number;
+  id: string;
 
   @Field()
   @Column()

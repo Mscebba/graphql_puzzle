@@ -7,13 +7,14 @@ import { createConnection } from 'typeorm';
 
 import { UserResolver } from './resolvers/user';
 import { CategoryResolver } from './resolvers/category';
+import { RecipeResolver } from './resolvers/recipe';
 
 const Server = async () => {
   const connection = await createConnection();
   await connection.synchronize();
 
   const schema = await buildSchema({
-    resolvers: [UserResolver, CategoryResolver],
+    resolvers: [UserResolver, CategoryResolver, RecipeResolver],
   });
 
   dotEnv.config();

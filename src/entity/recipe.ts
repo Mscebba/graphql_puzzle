@@ -10,21 +10,22 @@ import {
 
 @ObjectType()
 @Entity()
-export class User extends BaseEntity {
+export class Recipe extends BaseEntity {
   @Field(() => ID)
   @PrimaryGeneratedColumn('uuid')
-  id: number;
+  id: string;
 
   @Field()
   @Column()
   name: string;
 
   @Field()
-  @Column('text', { unique: true })
-  email: string;
-
   @Column()
-  password: string;
+  description: string;
+
+  @Field(() => [String])
+  @Column('simple-array')
+  ingredients: string[];
 
   @Field()
   @CreateDateColumn({ type: 'timestamp' })
