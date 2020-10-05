@@ -9,18 +9,18 @@ import {
 } from 'typeorm';
 
 @ObjectType()
-@Entity()
+@Entity('recipes')
 export class Recipe extends BaseEntity {
   @Field(() => ID)
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Field()
-  @Column()
+  @Column('text')
   name: string;
 
   @Field()
-  @Column()
+  @Column('text')
   description: string;
 
   @Field(() => [String])

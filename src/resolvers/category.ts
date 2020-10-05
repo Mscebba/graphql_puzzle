@@ -1,17 +1,20 @@
-import { Resolver, Query, Mutation, Arg } from 'type-graphql';
+import { Resolver, Query, Mutation, Arg, UseMiddleware } from 'type-graphql';
 
 import { Category } from '../entity/category';
+import { isAuth } from '../middleware/isauth';
 
 @Resolver()
 export class CategoryResolver {
   // Get the list of Categories
   @Query(() => [Category])
+  @UseMiddleware(isAuth)
   async getCategories(): Promise<Category[] | null> {
     return await Category.find();
   }
 
   // Get one Category by ID
   @Query(() => Category, { nullable: true })
+  @UseMiddleware(isAuth)
   async getOneCategory(
     @Arg('id', () => String) id: string
   ): Promise<Category | null> {
@@ -22,6 +25,7 @@ export class CategoryResolver {
 
   // Create a new Category
   @Mutation(() => Category)
+  @UseMiddleware(isAuth)
   async createCategory(@Arg('name') name: string): Promise<Category> {
     const category = await Category.create({
       name,
@@ -32,6 +36,7 @@ export class CategoryResolver {
 
   // Update existing category
   @Mutation(() => Category)
+  @UseMiddleware(isAuth)
   async updateCategory(
     @Arg('id') id: string,
     @Arg('name') name: string
@@ -45,6 +50,7 @@ export class CategoryResolver {
 
   // Delete category
   @Mutation(() => Boolean, { nullable: true })
+  @UseMiddleware(isAuth)
   async deleteCategory(
     @Arg('id', () => String) id: string
   ): Promise<Boolean | null> {

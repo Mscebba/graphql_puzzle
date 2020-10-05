@@ -9,14 +9,14 @@ import {
 } from 'typeorm';
 
 @ObjectType()
-@Entity()
+@Entity('categories')
 export class Category extends BaseEntity {
   @Field(() => ID)
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Field()
-  @Column()
+  @Column('text')
   name: string;
 
   @Field()

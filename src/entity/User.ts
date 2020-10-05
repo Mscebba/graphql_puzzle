@@ -9,21 +9,21 @@ import {
 } from 'typeorm';
 
 @ObjectType()
-@Entity()
+@Entity('users')
 export class User extends BaseEntity {
   @Field(() => ID)
   @PrimaryGeneratedColumn('uuid')
-  id: number;
+  id: string;
 
   @Field()
-  @Column()
+  @Column('text')
   name: string;
 
   @Field()
   @Column('text', { unique: true })
   email: string;
 
-  @Column()
+  @Column('text')
   password: string;
 
   @Field()
@@ -33,4 +33,10 @@ export class User extends BaseEntity {
   @Field()
   @UpdateDateColumn({ type: 'timestamp' })
   updatedAt: Date;
+}
+
+@ObjectType()
+export class LoginToken {
+  @Field()
+  token: string;
 }

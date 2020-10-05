@@ -1,8 +1,8 @@
+import 'dotenv/config';
 import 'reflect-metadata';
 import Express from 'express';
 import { ApolloServer } from 'apollo-server-express';
 import { buildSchema } from 'type-graphql';
-import dotEnv from 'dotenv';
 import { createConnection } from 'typeorm';
 
 import { UserResolver } from './resolvers/user';
@@ -17,9 +17,10 @@ const Server = async () => {
     resolvers: [UserResolver, CategoryResolver, RecipeResolver],
   });
 
-  dotEnv.config();
-
-  const apolloServer = new ApolloServer({ schema });
+  const apolloServer = new ApolloServer({
+    schema,
+    context: ({ req, res }) => ({ req, res }),
+  });
 
   const app = Express();
 
