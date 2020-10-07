@@ -1,68 +1,50 @@
+import { hash, compare } from 'bcryptjs';
 import {
   Resolver,
   Mutation,
   Arg,
-  Field,
   // Query,
   Ctx,
   UseMiddleware,
-  InputType,
 } from 'type-graphql';
-import { hash, compare } from 'bcryptjs';
 
 import { User, LoginToken } from '../entity/user';
 import { AppContext } from '../helper/context';
 import { createToken } from '../middleware/auth';
 import { isAuth } from '../middleware/isauth';
-
-@InputType()
-class NewUserInput {
-  @Field()
-  name: string;
-
-  @Field()
-  email: string;
-
-  @Field()
-  password: string;
-}
-
-@InputType()
-class UpdateUserInput {
-  @Field({ nullable: true })
-  name?: string;
-
-  @Field({ nullable: true })
-  email?: string;
-
-  @Field({ nullable: true })
-  password?: string;
-}
+import { NewUserInput, UpdateUserInput } from './userInput';
 
 @Resolver()
 export class UserResolver {
   // @Query(() => [User])
   // @UseMiddleware(isAuth)
   // async getUsers() {
+  //   console.log('estoy probando');
   //   return await User.find();
   // }
 
-  // Create a new User
+  //
+  // Create a new User ///////////////////////
+  //
   @Mutation(() => User)
   async signUp(@Arg('input') input: NewUserInput): Promise<User> {
+    const existingUser = await User.findOne({ email: input.email });
+    if (existingUser) throw new Error('Email is already in use');
     const hashedPassword = await hash(input.password, 12);
     input.password = hashedPassword;
     const user = await User.create({ ...input }).save();
     return user;
   }
 
-  // User login
+  //
+  // User login ///////////////////////
+  //
   @Mutation(() => LoginToken, { nullable: true })
   async login(
     @Arg('email') email: string,
     @Arg('password') password: string,
     @Ctx() {}: AppContext
-  ): Promise<LoginToken> {
+  ): Promise<LoginToken | null> {
     const user = await User.findOne({ email });
     if (!user) {
       throw new Error('Invalid credentials');
@@ -77,7 +59,9 @@ export class UserResolver {
     return { token };
   }
 
-  // Update your own User
+  //
+  // Update your own User ///////////////////////
+  //
   @Mutation(() => User)
   @UseMiddleware(isAuth)
   async updateUser(
@@ -85,7 +69,8 @@ export class UserResolver {
     @Arg('input') input: UpdateUserInput
   ): Promise<User> {
     const user = await User.findOne({ email: payload.email });
-    if (user?.email !== payload.email) {
+    if (!user) throw new Error('Not authenticated');
+    if (user.email !== payload.email) {
       throw new Error("You can't edit another user");
     }
     if (input.password) {
@@ -93,13 +78,14 @@ export class UserResolver {
       input.password = hashedPassword;
     }
 
-    Object.assign(user, input);
-    await user.save();
+    await Object.assign(user, input).save();
 
     return user;
   }
 
-  // Delete your own User
+  //
+  // Delete your own User ///////////////////////
+  //
   @Mutation(() => Boolean, { nullable: true })
   @UseMiddleware(isAuth)
   async deleteMyUser(@Ctx() { payload }: AppContext): Promise<Boolean | null> {

@@ -1,69 +1,29 @@
-import { AppContext } from 'src/helper/context';
 import { getRepository } from 'typeorm';
 import {
   Resolver,
   Query,
   Mutation,
   Arg,
-  Field,
   UseMiddleware,
   Ctx,
-  InputType,
 } from 'type-graphql';
 
+import { AppContext } from '../helper/context';
+import { isAuth } from '../middleware/isauth';
 import { Recipe } from '../entity/recipe';
 import { User } from '../entity/user';
 import { Category } from '../entity/category';
-import { isAuth } from '../middleware/isauth';
-
-@InputType()
-class NewRecipeInput {
-  @Field()
-  name: string;
-
-  @Field()
-  description: string;
-
-  @Field()
-  ingredients: string;
-
-  @Field({ nullable: true })
-  categoryId: string;
-}
-
-@InputType()
-class UpdateRecipeInput {
-  @Field()
-  id: string;
-
-  @Field({ nullable: true })
-  name?: string;
-
-  @Field({ nullable: true })
-  description?: string;
-
-  @Field({ nullable: true })
-  ingredients?: string;
-
-  @Field({ nullable: true })
-  categoryId?: string;
-}
-
-@InputType()
-class searchRecipesByFields {
-  @Field({ nullable: true })
-  name?: string;
-
-  @Field({ nullable: true })
-  description?: string;
-
-  @Field({ nullable: true })
-  ingredients?: string;
-}
+import {
+  NewRecipeInput,
+  UpdateRecipeInput,
+  searchRecipesByFields,
+} from './recipeinput';
 
 @Resolver()
 export class RecipeResolver {
-  // Create a new recipe
+  //
+  // Create a new recipe ///////////////////////
+  //
   @Mutation(() => Recipe)
   @UseMiddleware(isAuth)
   async createRecipe(
@@ -71,12 +31,15 @@ export class RecipeResolver {
     @Arg('input') input: NewRecipeInput
   ): Promise<Recipe> {
     const user = await User.findOne({ email: payload.email });
+    if (!user) throw new Error('User not found');
+
     const category = await Category.findOne({ id: input.categoryId });
-    input.categoryId = category?.id!;
+    if (!category) throw new Error('Invalid category id');
+    input.categoryId = category.id;
 
     const recipe = await Recipe.create({
       ...input,
-      author: user?.email,
+      author: user.email,
       user,
       category,
     }).save();
@@ -84,7 +47,9 @@ export class RecipeResolver {
     return recipe;
   }
 
-  // Get the list of recipes
+  //
+  // Get the list of recipes ///////////////////////
+  //
   @Query(() => [Recipe], { nullable: true })
   @UseMiddleware(isAuth)
   async getRecipes(): Promise<Recipe[] | null> {
@@ -95,7 +60,9 @@ export class RecipeResolver {
     return recipe;
   }
 
-  // Get one recipe by ID
+  //
+  // Get one recipe by ID ///////////////////////
+  //
   @Query(() => Recipe, { nullable: true })
   @UseMiddleware(isAuth)
   async getOneRecipe(
@@ -105,23 +72,30 @@ export class RecipeResolver {
       where: { id },
       relations: ['user', 'category'],
     });
-    if (!recipe) throw Error('Invalid ID.');
+    if (!recipe) throw Error('Invalid recipe Id.');
     return recipe;
   }
 
-  // Get my recipes
+  //
+  // Get my recipes ///////////////////////
+  //
   @Query(() => [Recipe], { nullable: true })
   @UseMiddleware(isAuth)
   async getMyRecipes(@Ctx() { payload }: AppContext): Promise<Recipe[] | null> {
-    const user = await User.findOne({ email: payload?.email });
+    const user = await User.findOne({ email: payload.email });
+    if (!user) throw new Error('User not found');
+
     const recipes = await Recipe.find({
-      where: { author: user?.email },
+      where: { author: user.email },
       relations: ['user', 'category'],
     });
+
     return recipes;
   }
 
-  // Get recipes by Field
+  //
+  // Get recipes by Field search ///////////////////////
+  //
   @Query(() => [Recipe], { nullable: true })
   @UseMiddleware(isAuth)
   async getRecipesByFieldSearch(@Arg('input') input: searchRecipesByFields) {
@@ -141,25 +115,34 @@ export class RecipeResolver {
     return recipe;
   }
 
-  // Update existing recipe
-  @Mutation(() => Recipe)
+  //
+  // Update existing recipe ///////////////////////
+  //
+  @Mutation(() => Recipe, { nullable: true })
   @UseMiddleware(isAuth)
   async updateRecipe(
     @Ctx() { payload }: AppContext,
     @Arg('input') input: UpdateRecipeInput
-  ): Promise<Recipe> {
+  ): Promise<Recipe | null> {
     const recipe = await Recipe.findOne(input.id);
-    if (!recipe) throw Error('Invalid Recipe ID');
+    if (!recipe) throw Error('Invalid recipe Id');
+
     const category = await Category.findOne(input.categoryId);
+    if (!category) throw new Error('Invalid category Id');
+
     const user = await User.findOne({ email: payload.email });
-    if (recipe.author !== user?.email) {
+    if (!user) throw new Error('Not authenticated');
+
+    if (recipe.author !== user.email) {
       throw Error('You are not the author of this recipe');
     }
     await Object.assign(recipe, { input, category }).save();
     return recipe;
   }
 
-  // Delete recipe
+  //
+  // Delete recipe ///////////////////////
+  //
   @Mutation(() => Boolean, { nullable: true })
   @UseMiddleware(isAuth)
   async deleteRecipe(
@@ -167,9 +150,12 @@ export class RecipeResolver {
     @Arg('id', () => String) id: string
   ): Promise<Boolean | null> {
     const recipe = await Recipe.findOne(id);
-    if (!recipe) throw Error('Invalid Recipe ID');
+    if (!recipe) throw Error('Invalid recipe Id');
+
     const user = await User.findOne({ email: payload.email });
-    if (recipe.author !== user?.email) {
+    if (!user) throw new Error('Not authenticated');
+
+    if (recipe.author !== user.email) {
       throw Error('You are not the author of this recipe');
     }
     await recipe.remove();
