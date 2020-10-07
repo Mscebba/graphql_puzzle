@@ -6,10 +6,13 @@ import {
   BaseEntity,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
 } from 'typeorm';
+import { User } from './user';
+import { Category } from './category';
 
 @ObjectType()
-@Entity('recipes')
+@Entity('recipe')
 export class Recipe extends BaseEntity {
   @Field(() => ID)
   @PrimaryGeneratedColumn('uuid')
@@ -23,9 +26,21 @@ export class Recipe extends BaseEntity {
   @Column('text')
   description: string;
 
-  @Field(() => [String])
-  @Column('simple-array')
-  ingredients: string[];
+  @Field()
+  @Column('text')
+  ingredients: string;
+
+  @Field()
+  @Column('text')
+  author: string;
+
+  @Field(() => User)
+  @ManyToOne(() => User, (user) => user.recipes)
+  user: User;
+
+  @Field(() => Category, { nullable: true })
+  @ManyToOne(() => Category, (category) => category.recipes)
+  category: Category;
 
   @Field()
   @CreateDateColumn({ type: 'timestamp' })

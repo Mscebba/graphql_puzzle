@@ -6,10 +6,12 @@ import {
   BaseEntity,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
+import { Recipe } from './recipe';
 
 @ObjectType()
-@Entity('categories')
+@Entity('category')
 export class Category extends BaseEntity {
   @Field(() => ID)
   @PrimaryGeneratedColumn('uuid')
@@ -18,6 +20,10 @@ export class Category extends BaseEntity {
   @Field()
   @Column('text')
   name: string;
+
+  @Field(() => [Recipe], { nullable: true })
+  @OneToMany(() => Recipe, (recipe) => recipe.category)
+  recipes: Recipe[];
 
   @Field()
   @CreateDateColumn({ type: 'timestamp' })

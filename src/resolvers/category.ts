@@ -9,7 +9,11 @@ export class CategoryResolver {
   @Query(() => [Category])
   @UseMiddleware(isAuth)
   async getCategories(): Promise<Category[] | null> {
-    return await Category.find();
+    const category = await Category.find({
+      relations: ['recipes'],
+    });
+
+    return category;
   }
 
   // Get one Category by ID
@@ -18,7 +22,10 @@ export class CategoryResolver {
   async getOneCategory(
     @Arg('id', () => String) id: string
   ): Promise<Category | null> {
-    const category = await Category.findOne({ id });
+    const category = await Category.findOne({
+      where: { id },
+      relations: ['recipes'],
+    });
     if (!category) throw Error('Invalid ID.');
     return category;
   }

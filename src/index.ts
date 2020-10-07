@@ -15,6 +15,7 @@ const Server = async () => {
 
   const schema = await buildSchema({
     resolvers: [UserResolver, CategoryResolver, RecipeResolver],
+    validate: false,
   });
 
   const apolloServer = new ApolloServer({

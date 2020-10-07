@@ -1,18 +1,22 @@
+import { AppContext } from 'src/helper/context';
+import { getRepository } from 'typeorm';
 import {
   Resolver,
   Query,
   Mutation,
   Arg,
   Field,
-  ArgsType,
-  Args,
   UseMiddleware,
+  Ctx,
+  InputType,
 } from 'type-graphql';
 
 import { Recipe } from '../entity/recipe';
+import { User } from '../entity/user';
+import { Category } from '../entity/category';
 import { isAuth } from '../middleware/isauth';
 
-@ArgsType()
+@InputType()
 class NewRecipeInput {
   @Field()
   name: string;
@@ -20,11 +24,14 @@ class NewRecipeInput {
   @Field()
   description: string;
 
-  @Field(() => [String])
-  ingredients: string[];
+  @Field()
+  ingredients: string;
+
+  @Field({ nullable: true })
+  categoryId: string;
 }
 
-@ArgsType()
+@InputType()
 class UpdateRecipeInput {
   @Field()
   id: string;
@@ -35,17 +42,57 @@ class UpdateRecipeInput {
   @Field({ nullable: true })
   description?: string;
 
-  @Field(() => [String], { nullable: true })
-  ingredients?: string[];
+  @Field({ nullable: true })
+  ingredients?: string;
+
+  @Field({ nullable: true })
+  categoryId?: string;
+}
+
+@InputType()
+class searchRecipesByFields {
+  @Field({ nullable: true })
+  name?: string;
+
+  @Field({ nullable: true })
+  description?: string;
+
+  @Field({ nullable: true })
+  ingredients?: string;
 }
 
 @Resolver()
 export class RecipeResolver {
+  // Create a new recipe
+  @Mutation(() => Recipe)
+  @UseMiddleware(isAuth)
+  async createRecipe(
+    @Ctx() { payload }: AppContext,
+    @Arg('input') input: NewRecipeInput
+  ): Promise<Recipe> {
+    const user = await User.findOne({ email: payload.email });
+    const category = await Category.findOne({ id: input.categoryId });
+    input.categoryId = category?.id!;
+
+    const recipe = await Recipe.create({
+      ...input,
+      author: user?.email,
+      user,
+      category,
+    }).save();
+
+    return recipe;
+  }
+
   // Get the list of recipes
   @Query(() => [Recipe], { nullable: true })
   @UseMiddleware(isAuth)
   async getRecipes(): Promise<Recipe[] | null> {
-    return await Recipe.find();
+    const recipe = await Recipe.find({
+      relations: ['user', 'category'],
+    });
+
+    return recipe;
   }
 
   // Get one recipe by ID
@@ -54,22 +101,42 @@ export class RecipeResolver {
   async getOneRecipe(
     @Arg('id', () => String) id: string
   ): Promise<Recipe | null> {
-    const recipe = await Recipe.findOne({ id });
+    const recipe = await Recipe.findOne({
+      where: { id },
+      relations: ['user', 'category'],
+    });
     if (!recipe) throw Error('Invalid ID.');
     return recipe;
   }
 
-  // Create a new recipe
-  @Mutation(() => Recipe)
+  // Get my recipes
+  @Query(() => [Recipe], { nullable: true })
   @UseMiddleware(isAuth)
-  async createRecipe(
-    @Args() { name, description, ingredients }: NewRecipeInput
-  ): Promise<Recipe> {
-    const recipe = await Recipe.create({
-      name,
-      description,
-      ingredients,
-    }).save();
+  async getMyRecipes(@Ctx() { payload }: AppContext): Promise<Recipe[] | null> {
+    const user = await User.findOne({ email: payload?.email });
+    const recipes = await Recipe.find({
+      where: { author: user?.email },
+      relations: ['user', 'category'],
+    });
+    return recipes;
+  }
+
+  // Get recipes by Field
+  @Query(() => [Recipe], { nullable: true })
+  @UseMiddleware(isAuth)
+  async getRecipesByFieldSearch(@Arg('input') input: searchRecipesByFields) {
+    const { name, description, ingredients } = input;
+
+    const recipe = await getRepository(Recipe)
+      .createQueryBuilder()
+      .where('name ILIKE :name', { name: `%${name}%` })
+      .orWhere('description ILIKE :description', {
+        description: `%${description}%`,
+      })
+      .orWhere('ingredients ILIKE :ingredients', {
+        ingredients: `%${ingredients}%`,
+      })
+      .getMany();
 
     return recipe;
   }
@@ -78,12 +145,17 @@ export class RecipeResolver {
   @Mutation(() => Recipe)
   @UseMiddleware(isAuth)
   async updateRecipe(
-    @Args() { id, name, description, ingredients }: UpdateRecipeInput
+    @Ctx() { payload }: AppContext,
+    @Arg('input') input: UpdateRecipeInput
   ): Promise<Recipe> {
-    const recipe = await Recipe.findOne({ id });
-    const updatedRecipe = { name, description, ingredients };
+    const recipe = await Recipe.findOne(input.id);
     if (!recipe) throw Error('Invalid Recipe ID');
-    await Object.assign(recipe, updatedRecipe).save();
+    const category = await Category.findOne(input.categoryId);
+    const user = await User.findOne({ email: payload.email });
+    if (recipe.author !== user?.email) {
+      throw Error('You are not the author of this recipe');
+    }
+    await Object.assign(recipe, { input, category }).save();
     return recipe;
   }
 
@@ -91,10 +163,15 @@ export class RecipeResolver {
   @Mutation(() => Boolean, { nullable: true })
   @UseMiddleware(isAuth)
   async deleteRecipe(
+    @Ctx() { payload }: AppContext,
     @Arg('id', () => String) id: string
   ): Promise<Boolean | null> {
-    const recipe = await Recipe.findOne({ id });
+    const recipe = await Recipe.findOne(id);
     if (!recipe) throw Error('Invalid Recipe ID');
+    const user = await User.findOne({ email: payload.email });
+    if (recipe.author !== user?.email) {
+      throw Error('You are not the author of this recipe');
+    }
     await recipe.remove();
     return true;
   }
