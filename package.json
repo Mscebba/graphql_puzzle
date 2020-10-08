@@ -19,7 +19,6 @@
     "typeorm": "^0.2.28"
   },
   "scripts": {
-    "build": "tsc",
     "start": "ts-node src/index.ts",
     "dev": "ts-node-dev --respawn src/index.ts"
   },
