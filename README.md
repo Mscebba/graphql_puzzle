@@ -39,26 +39,15 @@ Rename *.env.example* to **.env**
 ```bash
 PORT= '...your port (without quotes)'
 JWT_SECRET_KEY= '....your jwt secret key (without quotes)'
+DB_TYPE=
+DB_USERNAME =
+DB_PASSWORD=
+HOST=
+DB_NAME=
 ```
-3) Rename _ormconfig.json.example_ to **ormconfig.json**
-```bash
-{
-  "name": "default",
-  "type": "postgres",
-  "host": "localhost",
-  "port": 5432,
-  "username": "username",
-  "password": "password",
-  "database": "database",
-  "syncrhonize": true,
-  "logging": true,
-  "autoSchemaSync": true,
-  "entities": ["src/entity/*.*"]
-}
 
-```
-4) Start PostresQl server and create the database with the name in "database".
-5) From the folder you cloned the repository run the application.
+3) Start PostresQl server and create the database with the name in "database".
+4) From the folder you cloned the repository run the application.
 
 Using npm
 ```bash

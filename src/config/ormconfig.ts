@@ -1,12 +1,12 @@
 import path from 'path';
 import { createConnection } from 'typeorm';
 
-const type = process.env.TYPEORM_TYPE || 'postgres';
-const username = process.env.TYPEORM_USERNAME || 'user';
-const password = process.env.TYPEORM_PASSWORD || 'pass';
-const host = process.env.TYPEORM_HOST || 'db';
+const type = process.env.DB_TYPE || 'postgres';
+const username = process.env.DB_USERNAME || 'user';
+const password = process.env.DB_PASSWORD || 'pass';
+const host = process.env.HOST || 'db';
 const port = 5432;
-const database = process.env.TYPEORM_DATABASE || 'data';
+const database = process.env.DB_NAME || 'data';
 
 export async function connection() {
   await createConnection({
