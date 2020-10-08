@@ -17,7 +17,7 @@ import {
   NewRecipeInput,
   UpdateRecipeInput,
   searchRecipesByFields,
-} from './recipeinput';
+} from './recipeInput';
 
 @Resolver()
 export class RecipeResolver {
