@@ -2,6 +2,9 @@
 
 > This is a recipes CRUD backend created for Puzzle's challenge
 
+## Demo
+View live demo **[here](https://puzzlegraphql.herokuapp.com/graphql)**
+
 ## Used Libraries
 * NodeJs
 * GraphQl
@@ -103,7 +106,8 @@ mutation login {
 5) You'll find the other queries in the Playground right tabs **DOCS** and **SCHEMA**
 6) For more documentation about **"Apollo GraphQL Playground"** go [here](https://www.apollographql.com/docs/apollo-server/testing/graphql-playground/)
 
-
+### Project Demo
+[https://puzzlegraphql.herokuapp.com/graphql](https://puzzlegraphql.herokuapp.com/graphql)
 
 ### Author
 [Martin Scebba](https://www.linkedin.com/in/martinscebba/)
