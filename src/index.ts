@@ -1,11 +1,10 @@
 import 'dotenv/config';
 import 'reflect-metadata';
-import { createConnection } from 'typeorm';
 import { Server } from './server';
+import { connection } from './config/ormconfig';
 
 async function main() {
-  const connection = await createConnection();
-  await connection.synchronize();
+  connection();
 
   const app = await Server();
 
