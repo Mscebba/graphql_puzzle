@@ -1,12 +1,5 @@
 import { hash, compare } from 'bcryptjs';
-import {
-  Resolver,
-  Mutation,
-  Arg,
-  // Query,
-  Ctx,
-  UseMiddleware,
-} from 'type-graphql';
+import { Resolver, Mutation, Arg, Ctx, UseMiddleware } from 'type-graphql';
 
 import { User, LoginToken } from '../entity/user';
 import { AppContext } from '../helper/context';
@@ -16,13 +9,6 @@ import { NewUserInput, UpdateUserInput } from './userInput';
 
 @Resolver()
 export class UserResolver {
-  // @Query(() => [User])
-  // @UseMiddleware(isAuth)
-  // async getUsers() {
-  //   console.log('estoy probando');
-  //   return await User.find();
-  // }
-
   //
   // Create a new User ///////////////////////
   //

@@ -34,6 +34,10 @@ export class Recipe extends BaseEntity {
   @Column('text')
   author: string;
 
+  @Field(() => ID)
+  @Column()
+  categoryId: number;
+
   @Field(() => User)
   @ManyToOne(() => User, (user) => user.recipes)
   user: User;

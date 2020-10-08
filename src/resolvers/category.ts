@@ -51,7 +51,7 @@ export class CategoryResolver {
   @Mutation(() => Category)
   @UseMiddleware(isAuth)
   async updateCategory(
-    @Arg('id') id: string,
+    @Arg('id') id: number,
     @Arg('name') name: string
   ): Promise<Category> {
     const category = await Category.findOne({ id });
@@ -65,9 +65,7 @@ export class CategoryResolver {
   //
   @Mutation(() => Boolean, { nullable: true })
   @UseMiddleware(isAuth)
-  async deleteCategory(
-    @Arg('id', () => String) id: string
-  ): Promise<Boolean | null> {
+  async deleteCategory(@Arg('id') id: number): Promise<Boolean | null> {
     const category = await Category.findOne({ id });
     if (!category) throw Error('Invalid category Id.');
     await category.remove();

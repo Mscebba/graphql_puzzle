@@ -12,7 +12,7 @@ export class NewRecipeInput {
   ingredients: string;
 
   @Field({ nullable: true })
-  categoryId: string;
+  categoryId?: number;
 }
 
 @InputType()
@@ -30,7 +30,7 @@ export class UpdateRecipeInput {
   ingredients?: string;
 
   @Field({ nullable: true })
-  categoryId?: string;
+  categoryId?: number;
 }
 
 @InputType()

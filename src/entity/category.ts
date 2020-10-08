@@ -14,8 +14,8 @@ import { Recipe } from './recipe';
 @Entity('category')
 export class Category extends BaseEntity {
   @Field(() => ID)
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryGeneratedColumn()
+  id: number;
 
   @Field()
   @Column('text')
