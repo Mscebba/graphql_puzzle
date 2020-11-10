@@ -1,6 +1,6 @@
 # Typescript Graphql CRUD
 
-> This is a recipes CRUD backend created for Puzzle's challenge
+> This is a recipes CRUD backend.
 
 ## Demo
 View live demo **[here](https://puzzlegraphql.herokuapp.com/graphql)**
